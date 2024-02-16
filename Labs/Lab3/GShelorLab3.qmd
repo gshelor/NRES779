@@ -1,0 +1,35 @@
+---
+title: "Lab 3: Likelihood"
+author: "Griffin Shelor"
+format: pdf
+---
+
+## Loading packages, reading in data
+```{r}
+#| output: FALSE
+library(pacman)
+p_load(here, tidyverse, gtExtras, RColorBrewer)
+hemlock <- read_csv(here("Labs", "Lab3", "HemlockData.csv"))
+x <- hemlock$Light
+y <- hemlock$ObservedGrowthRate
+```
+
+## Section 6
+```{r}
+qqnorm(y)
+plot(x,y,ylab="Growth Rate (cm/yr)", xlab = ("Light Availability"), pch=16)
+## After looking at the qqnorm plot, there is a slight tail at each end of the data, which may potentially indicate the data residuals are not normally distributed. However, the line is mostly straight, so the residuals are probably normally distributed.
+set.seed(802)
+model <- nls(y ~ a*(x-c)/((a/s)+x-c), trace = TRUE,start=c(a=46,s=1.25,c=3))
+summary(model)
+p <- coef(model)
+a.hat <- p[1]
+s.hat <- p[2]
+c.hat <- p[3]
+yhat <- predict(model)
+lines(x,yhat,col="red")
+qqnorm(yhat)
+## The qqnorm plot for the predicted values do not indicate that the model residuals are normally distributed. There is a long tail at the right end of the plot and the line is not very straight, so we should not assume that the residuals of the predicted data from the model are normally distributed.
+```
+
+
