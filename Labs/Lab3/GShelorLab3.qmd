@@ -32,4 +32,18 @@ qqnorm(yhat)
 ## The qqnorm plot for the predicted values do not indicate that the model residuals are normally distributed. There is a long tail at the right end of the plot and the line is not very straight, so we should not assume that the residuals of the predicted data from the model are normally distributed.
 ```
 
+## Section 7, Question 12
+```{r}
+set.seed(802)
+model <- nls(y ~ a*(x-c)/((a/s)+x-c), trace = TRUE,start=c(a=35,s=4.25,c=3))
+summary(model)
+p <- coef(model)
+a.hat <- p[1]
+s.hat <- p[2]
+c.hat <- p[3]
+yhat <- predict(model)
+# lines(x,yhat,col="red")
+qqnorm(yhat)
+```
+
 

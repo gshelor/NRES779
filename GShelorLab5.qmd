@@ -1,0 +1,93 @@
+---
+title: "NRES 779 Lab 5"
+author: "Griffin Shelor"
+format: pdf
+---
+```{r}
+library(pacman)
+p_load(tidyverse, here, invgamma)
+```
+
+## Section 1: Preliminaries
+```{r}
+## Question 1
+set.seed(1991)
+## Question 2
+## simulating 100 data points with mean mu = 100 and variance = 25
+y <- rnorm(100, 100, sqrt(25))
+
+## Question 3
+draw.mean <- function(data, mu_0, sigma_0, variance){
+  mu_1 <- ((mu_0 / sigma_0^2) + (sum(data) / variance)) / ((1/sigma_0^2) + (length(data)/variance))
+  sigma_sqd_1 <- 1 / ((1 / sigma_0^2) + y / variance)
+  random_meandraw <- rnorm(1, mu_1, sigma_sqd_1)
+  return(random_meandraw)
+}
+
+## Question 4
+draw.var <- function(data, alpha_0, beta_0, mu){
+  alpha_1 <- alpha_0 + (length(data) / 2)
+  beta_1 <- beta_0 + (sum((data - mu)^2) / 2)
+  random_vardraw <- rinvgamma(1, shape = alpha_1, rate = beta_1)
+  return(random_vardraw)
+}
+```
+
+
+## Section 2: Making a Sampler
+```{r}
+## Question 5
+## creating matrices to store samples from posterior distributions of mean and variance
+sample_mean_matrix <- matrix(nrow = 10000, ncol = 3)
+sample_var_matrix <- matrix(nrow = 10000, ncol = 3)
+
+## Question 6
+sample_mean_matrix[1,] <- 20
+sample_var_matrix[1,] <- 15
+
+## Question 7
+for (chain in 1:ncol(sample_mean_matrix)){
+  for (iter in 2:nrow(sample_mean_matrix)){
+    prev_mean <- sample_mean_matrix[iter-1,chain]
+    prev_var <- sample_var_matrix[iter-1,chain]
+    sample_mean_matrix[iter,chain] <- draw.mean(y, 0, sqrt(10000), prev_var)
+    sample_var_matrix[iter, chain] <- draw.var(y, 0.01, 0.01, prev_mean)
+  }
+}
+```
+
+
+## Section 3: Trace Plots and Plots of Marginal Posterior Distributions
+```{r}
+## Question 8
+# discarding first 1000 rows as burn-in/warmup
+post_burn_mean <- sample_mean_matrix[1001:nrow(sample_mean_matrix),]
+hist(post_burn_mean)
+
+# making trace plots
+plot(seq(1, nrow(post_burn_mean)), post_burn_mean[,1], xlab = "Iteration", ylab = "Sampled Mean", type = 'l', main = 'Trace Plot', col = 'green')
+lines(post_burn_mean[,2], col = 'blue')
+lines(post_burn_mean[,3], col = 'red')
+
+## Question 9
+# combining chains
+combined_chains_mean <- c(post_burn_mean[,1], post_burn_mean[,2], post_burn_mean[,3])
+hist(combined_chains_mean)
+abline(v = 100, col = 'blue', lwd = 3)
+
+## Question 10
+# repeating 8 and 9 for the variance
+post_burn_var <- sample_var_matrix[1001:nrow(sample_var_matrix),]
+
+# making trace plots
+plot(seq(1, nrow(post_burn_var)), post_burn_var[,1], xlab = "Iteration", ylab = "Sampled Mean", type = 'l', main = 'Trace Plot', col = 'green')
+lines(post_burn_var[,2], col = 'blue')
+lines(post_burn_var[,3], col = 'red')
+
+# combining chains
+combined_chains_var <- c(post_burn_var[,1], post_burn_var[,2], post_burn_var[,3])
+hist(combined_chains_var)
+abline(v = 25, col = 'blue', lwd = 3)
+```
+
+
