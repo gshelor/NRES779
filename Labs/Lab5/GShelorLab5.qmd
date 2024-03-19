@@ -62,7 +62,7 @@ for (chain in 1:ncol(sample_mean_matrix)){
 ## Question 8
 # discarding first 1000 rows as burn-in/warmup
 post_burn_mean <- sample_mean_matrix[1001:nrow(sample_mean_matrix),]
-hist(post_burn_mean)
+# hist(post_burn_mean)
 
 # making trace plots
 plot(seq(1, nrow(post_burn_mean)), post_burn_mean[,1], xlab = "Iteration", ylab = "Sampled Mean", type = 'l', main = 'Trace Plot', col = 'green')
@@ -88,6 +88,22 @@ lines(post_burn_var[,3], col = 'red')
 combined_chains_var <- c(post_burn_var[,1], post_burn_var[,2], post_burn_var[,3])
 hist(combined_chains_var)
 abline(v = 25, col = 'blue', lwd = 3)
+
+## Question 11
+# mean and SD of combined chains for mu
+mean_combined_chains_mean <- mean(combined_chains_mean)
+sd_combined_chains_mean <- sd(combined_chains_mean)
+# mean and SD of combined chains for sigma^2
+mean_combined_chains_var <- mean(combined_chains_var)
+sd_combined_chains_var <- sd(combined_chains_var)
+# printing values
+mean_combined_chains_mean
+sd_combined_chains_mean
+mean_combined_chains_var
+sd_combined_chains_var
 ```
 
+```{r}
+
+```
 
