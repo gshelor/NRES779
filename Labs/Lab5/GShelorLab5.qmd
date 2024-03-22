@@ -19,7 +19,7 @@ y <- rnorm(100, 100, sqrt(25))
 ## Question 3
 draw.mean <- function(data, mu_0, sigma_0, variance){
   mu_1 <- ((mu_0 / sigma_0^2) + (sum(data) / variance)) / ((1/sigma_0^2) + (length(data)/variance))
-  sigma_sqd_1 <- 1 / ((1 / sigma_0^2) + y / variance)
+  sigma_sqd_1 <- 1 / ((1 / sigma_0^2) + length(data) / variance)
   random_meandraw <- rnorm(1, mu_1, sigma_sqd_1)
   return(random_meandraw)
 }
@@ -48,9 +48,9 @@ sample_var_matrix[1,] <- 15
 ## Question 7
 for (chain in 1:ncol(sample_mean_matrix)){
   for (iter in 2:nrow(sample_mean_matrix)){
-    prev_mean <- sample_mean_matrix[iter-1,chain]
     prev_var <- sample_var_matrix[iter-1,chain]
     sample_mean_matrix[iter,chain] <- draw.mean(y, 0, sqrt(10000), prev_var)
+    prev_mean <- sample_mean_matrix[iter,chain]
     sample_var_matrix[iter, chain] <- draw.var(y, 0.01, 0.01, prev_mean)
   }
 }
@@ -80,7 +80,7 @@ abline(v = 100, col = 'blue', lwd = 3)
 post_burn_var <- sample_var_matrix[1001:nrow(sample_var_matrix),]
 
 # making trace plots
-plot(seq(1, nrow(post_burn_var)), post_burn_var[,1], xlab = "Iteration", ylab = "Sampled Mean", type = 'l', main = 'Trace Plot', col = 'green')
+plot(seq(1, nrow(post_burn_var)), post_burn_var[,1], xlab = "Iteration", ylab = "Sampled Variance", type = 'l', main = 'Trace Plot', col = 'green')
 lines(post_burn_var[,2], col = 'blue')
 lines(post_burn_var[,3], col = 'red')
 
@@ -101,9 +101,593 @@ mean_combined_chains_mean
 sd_combined_chains_mean
 mean_combined_chains_var
 sd_combined_chains_var
-```
 
+## Question 12
+se_data <- sd(y) / sqrt(length(y))
+se_data
+```
+## Question 13, n = 10
 ```{r}
+# simulating new dataset
+y_10 <- rnorm(10, 100, sqrt(25))
 
+
+# creating matrices to store samples from posterior distributions of mean and variance
+sample_mean_matrix_10 <- matrix(nrow = 10000, ncol = 3)
+sample_var_matrix_10 <- matrix(nrow = 10000, ncol = 3)
+
+# initializing values
+sample_mean_matrix_10[1,] <- 20
+sample_var_matrix_10[1,] <- 15
+
+# sampling from posterior distributions
+for (chain in 1:ncol(sample_mean_matrix_10)){
+  for (iter in 2:nrow(sample_mean_matrix_10)){
+    prev_var <- sample_var_matrix_10[iter-1,chain]
+    sample_mean_matrix_10[iter,chain] <- draw.mean(y_10, 0, sqrt(10000), prev_var)
+    prev_mean <- sample_mean_matrix_10[iter,chain]
+    sample_var_matrix_10[iter, chain] <- draw.var(y_10, 0.01, 0.01, prev_mean)
+  }
+}
+
+# discarding first 1000 rows as burn-in/warmup
+post_burn_mean_10 <- sample_mean_matrix_10[1001:nrow(sample_mean_matrix_10),]
+# hist(post_burn_mean_10)
+
+# making trace plots
+plot(seq(1, nrow(post_burn_mean_10)), post_burn_mean_10[,1], xlab = "Iteration", ylab = "Sampled Mean", type = 'l', main = 'Trace Plot', col = 'green')
+lines(post_burn_mean_10[,2], col = 'blue')
+lines(post_burn_mean_10[,3], col = 'red')
+
+# combining chains
+combined_chains_mean_10 <- c(post_burn_mean_10[,1], post_burn_mean_10[,2], post_burn_mean_10[,3])
+hist(combined_chains_mean_10)
+abline(v = 100, col = 'blue', lwd = 3)
+
+# repeating for the variance
+post_burn_var_10 <- sample_var_matrix_10[1001:nrow(sample_var_matrix_10),]
+
+# making trace plots
+plot(seq(1, nrow(post_burn_var_10)), post_burn_var_10[,1], xlab = "Iteration", ylab = "Sampled Variance", type = 'l', main = 'Trace Plot', col = 'green')
+lines(post_burn_var_10[,2], col = 'blue')
+lines(post_burn_var_10[,3], col = 'red')
+
+# combining chains
+combined_chains_var_10 <- c(post_burn_var_10[,1], post_burn_var_10[,2], post_burn_var_10[,3])
+hist(combined_chains_var_10)
+abline(v = 25, col = 'blue', lwd = 3)
+
+## Question 11
+# mean and SD of combined chains for mu
+mean_combined_chains_mean_10 <- mean(combined_chains_mean_10)
+sd_combined_chains_mean_10 <- sd(combined_chains_mean_10)
+# mean and SD of combined chains for sigma^2
+mean_combined_chains_var_10 <- mean(combined_chains_var_10)
+sd_combined_chains_var_10 <- sd(combined_chains_var_10)
+# printing values
+mean_combined_chains_mean_10
+sd_combined_chains_mean_10
+mean_combined_chains_var_10
+sd_combined_chains_var_10
 ```
 
+## Question 13, n = 100
+```{r}
+# creating new simulated data
+y_100 <- rnorm(100, 100, sqrt(25))
+
+# creating matrices to store samples from posterior distributions of mean and variance
+sample_mean_matrix_100 <- matrix(nrow = 10000, ncol = 3)
+sample_var_matrix_100 <- matrix(nrow = 10000, ncol = 3)
+
+# initializing values
+sample_mean_matrix_100[1,] <- 20
+sample_var_matrix_100[1,] <- 15
+
+# sampling from posterior distributions
+for (chain in 1:ncol(sample_mean_matrix_100)){
+  for (iter in 2:nrow(sample_mean_matrix_100)){
+    prev_var <- sample_var_matrix_100[iter-1,chain]
+    sample_mean_matrix_100[iter,chain] <- draw.mean(y_100, 0, sqrt(10000), prev_var)
+    prev_mean <- sample_mean_matrix_100[iter,chain]
+    sample_var_matrix_100[iter, chain] <- draw.var(y_100, 0.01, 0.01, prev_mean)
+  }
+}
+
+# discarding first 1000 rows as burn-in/warmup
+post_burn_mean_100 <- sample_mean_matrix_100[1001:nrow(sample_mean_matrix_100),]
+# hist(post_burn_mean_100)
+
+# making trace plots
+plot(seq(1, nrow(post_burn_mean_100)), post_burn_mean_100[,1], xlab = "Iteration", ylab = "Sampled Mean", type = 'l', main = 'Trace Plot', col = 'green')
+lines(post_burn_mean_100[,2], col = 'blue')
+lines(post_burn_mean_100[,3], col = 'red')
+
+# combining chains
+combined_chains_mean_100 <- c(post_burn_mean_100[,1], post_burn_mean_100[,2], post_burn_mean_100[,3])
+hist(combined_chains_mean_100)
+abline(v = 100, col = 'blue', lwd = 3)
+
+# repeating for the variance
+post_burn_var_100 <- sample_var_matrix_100[1001:nrow(sample_var_matrix_100),]
+
+# making trace plots
+plot(seq(1, nrow(post_burn_var_100)), post_burn_var_100[,1], xlab = "Iteration", ylab = "Sampled Variance", type = 'l', main = 'Trace Plot', col = 'green')
+lines(post_burn_var_100[,2], col = 'blue')
+lines(post_burn_var_100[,3], col = 'red')
+
+# combining chains
+combined_chains_var_100 <- c(post_burn_var_100[,1], post_burn_var_100[,2], post_burn_var_100[,3])
+hist(combined_chains_var_100)
+abline(v = 25, col = 'blue', lwd = 3)
+
+# mean and SD of combined chains for mu
+mean_combined_chains_mean_100 <- mean(combined_chains_mean_100)
+sd_combined_chains_mean_100 <- sd(combined_chains_mean_100)
+# mean and SD of combined chains for sigma^2
+mean_combined_chains_var_100 <- mean(combined_chains_var_100)
+sd_combined_chains_var_100 <- sd(combined_chains_var_100)
+# printing values
+mean_combined_chains_mean_100
+sd_combined_chains_mean_100
+mean_combined_chains_var_100
+sd_combined_chains_var_100
+```
+
+## Question 13, n = 1000
+```{r}
+# creating new simulated data
+y_1000 <- rnorm(1000, 100, sqrt(25))
+
+# creating matrices to store samples from posterior distributions of mean and variance
+sample_mean_matrix_1000 <- matrix(nrow = 10000, ncol = 3)
+sample_var_matrix_1000 <- matrix(nrow = 10000, ncol = 3)
+
+# initializing values
+sample_mean_matrix_1000[1,] <- 20
+sample_var_matrix_1000[1,] <- 15
+
+# sampling from posterior distributions
+for (chain in 1:ncol(sample_mean_matrix_1000)){
+  for (iter in 2:nrow(sample_mean_matrix_1000)){
+    prev_var <- sample_var_matrix_1000[iter-1,chain]
+    sample_mean_matrix_1000[iter,chain] <- draw.mean(y_1000, 0, sqrt(10000), prev_var)
+    prev_mean <- sample_mean_matrix_1000[iter,chain]
+    sample_var_matrix_1000[iter, chain] <- draw.var(y_1000, 0.01, 0.01, prev_mean)
+  }
+}
+
+# discarding first 1000 rows as burn-in/warmup
+post_burn_mean_1000 <- sample_mean_matrix_1000[1001:nrow(sample_mean_matrix_1000),]
+# hist(post_burn_mean_100)
+
+# making trace plots
+plot(seq(1, nrow(post_burn_mean_1000)), post_burn_mean_1000[,1], xlab = "Iteration", ylab = "Sampled Mean", type = 'l', main = 'Trace Plot', col = 'green')
+lines(post_burn_mean_1000[,2], col = 'blue')
+lines(post_burn_mean_1000[,3], col = 'red')
+
+# combining chains
+combined_chains_mean_1000 <- c(post_burn_mean_1000[,1], post_burn_mean_1000[,2], post_burn_mean_1000[,3])
+hist(combined_chains_mean_1000)
+abline(v = 100, col = 'blue', lwd = 3)
+
+# repeating for the variance
+post_burn_var_1000 <- sample_var_matrix_1000[1001:nrow(sample_var_matrix_1000),]
+
+# making trace plots
+plot(seq(1, nrow(post_burn_var_1000)), post_burn_var_1000[,1], xlab = "Iteration", ylab = "Sampled Variance", type = 'l', main = 'Trace Plot', col = 'green')
+lines(post_burn_var_1000[,2], col = 'blue')
+lines(post_burn_var_1000[,3], col = 'red')
+
+# combining chains
+combined_chains_var_1000 <- c(post_burn_var_1000[,1], post_burn_var_1000[,2], post_burn_var_1000[,3])
+hist(combined_chains_var_1000)
+abline(v = 25, col = 'blue', lwd = 3)
+
+# mean and SD of combined chains for mu
+mean_combined_chains_mean_1000 <- mean(combined_chains_mean_1000)
+sd_combined_chains_mean_1000 <- sd(combined_chains_mean_1000)
+# mean and SD of combined chains for sigma^2
+mean_combined_chains_var_1000 <- mean(combined_chains_var_1000)
+sd_combined_chains_var_1000 <- sd(combined_chains_var_1000)
+# printing values
+mean_combined_chains_mean_1000
+sd_combined_chains_mean_1000
+mean_combined_chains_var_1000
+sd_combined_chains_var_1000
+```
+
+
+## Question 13, n = 100000
+```{r}
+# creating new simulated data
+y_100000 <- rnorm(100000, 100, sqrt(25))
+
+# creating matrices to store samples from posterior distributions of mean and variance
+sample_mean_matrix_100000 <- matrix(nrow = 10000, ncol = 3)
+sample_var_matrix_100000 <- matrix(nrow = 10000, ncol = 3)
+
+# initializing values
+sample_mean_matrix_100000[1,] <- 20
+sample_var_matrix_100000[1,] <- 15
+
+# sampling from posterior distributions
+for (chain in 1:ncol(sample_mean_matrix_100000)){
+  for (iter in 2:nrow(sample_mean_matrix_100000)){
+    prev_var <- sample_var_matrix_100000[iter-1,chain]
+    sample_mean_matrix_100000[iter,chain] <- draw.mean(y_100000, 0, sqrt(10000), prev_var)
+    prev_mean <- sample_mean_matrix_100000[iter,chain]
+    sample_var_matrix_100000[iter, chain] <- draw.var(y_100000, 0.01, 0.01, prev_mean)
+  }
+}
+
+# discarding first 1000 rows as burn-in/warmup
+post_burn_mean_100000 <- sample_mean_matrix_100000[1001:nrow(sample_mean_matrix_100000),]
+# hist(post_burn_mean_100)
+
+# making trace plots
+plot(seq(1, nrow(post_burn_mean_100000)), post_burn_mean_100000[,1], xlab = "Iteration", ylab = "Sampled Mean", type = 'l', main = 'Trace Plot', col = 'green')
+lines(post_burn_mean_100000[,2], col = 'blue')
+lines(post_burn_mean_100000[,3], col = 'red')
+
+# combining chains
+combined_chains_mean_100000 <- c(post_burn_mean_100000[,1], post_burn_mean_100000[,2], post_burn_mean_100000[,3])
+hist(combined_chains_mean_100000)
+abline(v = 100, col = 'blue', lwd = 3)
+
+# repeating for the variance
+post_burn_var_100000 <- sample_var_matrix_100000[1001:nrow(sample_var_matrix_100000),]
+
+# making trace plots
+plot(seq(1, nrow(post_burn_var_100000)), post_burn_var_100000[,1], xlab = "Iteration", ylab = "Sampled Variance", type = 'l', main = 'Trace Plot', col = 'green')
+lines(post_burn_var_100000[,2], col = 'blue')
+lines(post_burn_var_100000[,3], col = 'red')
+
+# combining chains
+combined_chains_var_100000 <- c(post_burn_var_100000[,1], post_burn_var_100000[,2], post_burn_var_100000[,3])
+hist(combined_chains_var_100000)
+abline(v = 25, col = 'blue', lwd = 3)
+
+# mean and SD of combined chains for mu
+mean_combined_chains_mean_100000 <- mean(combined_chains_mean_100000)
+sd_combined_chains_mean_100000 <- sd(combined_chains_mean_100000)
+# mean and SD of combined chains for sigma^2
+mean_combined_chains_var_100000 <- mean(combined_chains_var_100000)
+sd_combined_chains_var_100000 <- sd(combined_chains_var_100000)
+# printing values
+mean_combined_chains_mean_100000
+sd_combined_chains_mean_100000
+mean_combined_chains_var_100000
+sd_combined_chains_var_100000
+```
+
+
+## Question 14
+```{r}
+##### n = 10 #####
+# simulating new dataset
+y_10 <- rnorm(10, 100, sqrt(25))
+
+
+# creating matrices to store samples from posterior distributions of mean and variance
+sample_mean_matrix_10 <- matrix(nrow = 10000, ncol = 3)
+sample_var_matrix_10 <- matrix(nrow = 10000, ncol = 3)
+
+# initializing values
+sample_mean_matrix_10[1,] <- 20
+sample_var_matrix_10[1,] <- 15
+
+# sampling from posterior distributions
+for (chain in 1:ncol(sample_mean_matrix_10)){
+  for (iter in 2:nrow(sample_mean_matrix_10)){
+    prev_var <- sample_var_matrix_10[iter-1,chain]
+    sample_mean_matrix_10[iter,chain] <- draw.mean(y_10, 0, sqrt(10000), prev_var)
+    prev_mean <- sample_mean_matrix_10[iter,chain]
+    sample_var_matrix_10[iter, chain] <- draw.var(y_10, 0.01, 0.01, prev_mean)
+  }
+}
+
+# discarding first 1000 rows as burn-in/warmup
+post_burn_mean_10 <- sample_mean_matrix_10[2:nrow(sample_mean_matrix_10),]
+# hist(post_burn_mean_10)
+
+# making trace plots
+plot(seq(1, nrow(post_burn_mean_10)), post_burn_mean_10[,1], xlab = "Iteration", ylab = "Sampled Mean", type = 'l', main = 'Trace Plot of Combined Chains of Sampled Means (n = 10)', col = 'green')
+lines(post_burn_mean_10[,2], col = 'blue')
+lines(post_burn_mean_10[,3], col = 'red')
+
+# combining chains
+combined_chains_mean_10 <- c(post_burn_mean_10[,1], post_burn_mean_10[,2], post_burn_mean_10[,3])
+hist(combined_chains_mean_10, main = "Sampled Means (n = 10)")
+abline(v = 100, col = 'blue', lwd = 3)
+
+# repeating for the variance
+post_burn_var_10 <- sample_var_matrix_10[2:nrow(sample_var_matrix_10),]
+
+# making trace plots
+plot(seq(1, nrow(post_burn_var_10)), post_burn_var_10[,1], xlab = "Iteration", ylab = "Sampled Variance", type = 'l', main = 'Trace Plot of Combined Chains of Sampled Variance (n = 10)', col = 'green')
+lines(post_burn_var_10[,2], col = 'blue')
+lines(post_burn_var_10[,3], col = 'red')
+
+# combining chains
+combined_chains_var_10 <- c(post_burn_var_10[,1], post_burn_var_10[,2], post_burn_var_10[,3])
+hist(combined_chains_var_10, main = "Sampled Variance (n = 10)")
+abline(v = 25, col = 'blue', lwd = 3)
+
+# mean and SD of combined chains for mu
+mean_combined_chains_mean_10 <- mean(combined_chains_mean_10)
+sd_combined_chains_mean_10 <- sd(combined_chains_mean_10)
+# mean and SD of combined chains for sigma^2
+mean_combined_chains_var_10 <- mean(combined_chains_var_10)
+sd_combined_chains_var_10 <- sd(combined_chains_var_10)
+# printing values
+mean_combined_chains_mean_10
+sd_combined_chains_mean_10
+mean_combined_chains_var_10
+sd_combined_chains_var_10
+
+
+##### n = 100 #####
+# creating new simulated data
+y_100 <- rnorm(100, 100, sqrt(25))
+
+# creating matrices to store samples from posterior distributions of mean and variance
+sample_mean_matrix_100 <- matrix(nrow = 10000, ncol = 3)
+sample_var_matrix_100 <- matrix(nrow = 10000, ncol = 3)
+
+# initializing values
+sample_mean_matrix_100[1,] <- 20
+sample_var_matrix_100[1,] <- 15
+
+# sampling from posterior distributions
+for (chain in 1:ncol(sample_mean_matrix_100)){
+  for (iter in 2:nrow(sample_mean_matrix_100)){
+    prev_var <- sample_var_matrix_100[iter-1,chain]
+    sample_mean_matrix_100[iter,chain] <- draw.mean(y_100, 0, sqrt(10000), prev_var)
+    prev_mean <- sample_mean_matrix_100[iter,chain]
+    sample_var_matrix_100[iter, chain] <- draw.var(y_100, 0.01, 0.01, prev_mean)
+  }
+}
+
+# discarding first 1000 rows as burn-in/warmup
+post_burn_mean_100 <- sample_mean_matrix_100[2:nrow(sample_mean_matrix_100),]
+# hist(post_burn_mean_100)
+
+# making trace plots
+plot(seq(1, nrow(post_burn_mean_100)), post_burn_mean_100[,1], xlab = "Iteration", ylab = "Sampled Mean", type = 'l', main = 'Trace Plot (n = 100)', col = 'green')
+lines(post_burn_mean_100[,2], col = 'blue')
+lines(post_burn_mean_100[,3], col = 'red')
+
+# combining chains
+combined_chains_mean_100 <- c(post_burn_mean_100[,1], post_burn_mean_100[,2], post_burn_mean_100[,3])
+hist(combined_chains_mean_100, main = "Sampled Mean (n = 100)")
+abline(v = 100, col = 'blue', lwd = 3)
+
+# repeating for the variance
+post_burn_var_100 <- sample_var_matrix_100[2:nrow(sample_var_matrix_100),]
+
+# making trace plots
+plot(seq(1, nrow(post_burn_var_100)), post_burn_var_100[,1], xlab = "Iteration", ylab = "Sampled Variance", type = 'l', main = 'Trace Plot', col = 'green')
+lines(post_burn_var_100[,2], col = 'blue')
+lines(post_burn_var_100[,3], col = 'red')
+
+# combining chains
+combined_chains_var_100 <- c(post_burn_var_100[,1], post_burn_var_100[,2], post_burn_var_100[,3])
+hist(combined_chains_var_100, main = "Sampled Variance (n = 100)")
+abline(v = 25, col = 'blue', lwd = 3)
+
+# mean and SD of combined chains for mu
+mean_combined_chains_mean_100 <- mean(combined_chains_mean_100)
+sd_combined_chains_mean_100 <- sd(combined_chains_mean_100)
+# mean and SD of combined chains for sigma^2
+mean_combined_chains_var_100 <- mean(combined_chains_var_100)
+sd_combined_chains_var_100 <- sd(combined_chains_var_100)
+# printing values
+mean_combined_chains_mean_100
+sd_combined_chains_mean_100
+mean_combined_chains_var_100
+sd_combined_chains_var_100
+
+
+##### n = 1000 #####
+# creating new simulated data
+y_1000 <- rnorm(1000, 100, sqrt(25))
+
+# creating matrices to store samples from posterior distributions of mean and variance
+sample_mean_matrix_1000 <- matrix(nrow = 10000, ncol = 3)
+sample_var_matrix_1000 <- matrix(nrow = 10000, ncol = 3)
+
+# initializing values
+sample_mean_matrix_1000[1,] <- 20
+sample_var_matrix_1000[1,] <- 15
+
+# sampling from posterior distributions
+for (chain in 1:ncol(sample_mean_matrix_1000)){
+  for (iter in 2:nrow(sample_mean_matrix_1000)){
+    prev_var <- sample_var_matrix_1000[iter-1,chain]
+    sample_mean_matrix_1000[iter,chain] <- draw.mean(y_1000, 0, sqrt(10000), prev_var)
+    prev_mean <- sample_mean_matrix_1000[iter,chain]
+    sample_var_matrix_1000[iter, chain] <- draw.var(y_1000, 0.01, 0.01, prev_mean)
+  }
+}
+
+# discarding first 1000 rows as burn-in/warmup
+post_burn_mean_1000 <- sample_mean_matrix_1000[2:nrow(sample_mean_matrix_1000),]
+# hist(post_burn_mean_100)
+
+# making trace plots
+plot(seq(1, nrow(post_burn_mean_1000)), post_burn_mean_1000[,1], xlab = "Iteration", ylab = "Sampled Mean", type = 'l', main = 'Trace Plot', col = 'green')
+lines(post_burn_mean_1000[,2], col = 'blue')
+lines(post_burn_mean_1000[,3], col = 'red')
+
+# combining chains
+combined_chains_mean_1000 <- c(post_burn_mean_1000[,1], post_burn_mean_1000[,2], post_burn_mean_1000[,3])
+hist(combined_chains_mean_1000)
+abline(v = 100, col = 'blue', lwd = 3)
+
+# repeating for the variance
+post_burn_var_1000 <- sample_var_matrix_1000[2:nrow(sample_var_matrix_1000),]
+
+# making trace plots
+plot(seq(1, nrow(post_burn_var_1000)), post_burn_var_1000[,1], xlab = "Iteration", ylab = "Sampled Variance", type = 'l', main = 'Trace Plot', col = 'green')
+lines(post_burn_var_1000[,2], col = 'blue')
+lines(post_burn_var_1000[,3], col = 'red')
+
+# combining chains
+combined_chains_var_1000 <- c(post_burn_var_1000[,1], post_burn_var_1000[,2], post_burn_var_1000[,3])
+hist(combined_chains_var_1000)
+abline(v = 25, col = 'blue', lwd = 3)
+
+# mean and SD of combined chains for mu
+mean_combined_chains_mean_1000 <- mean(combined_chains_mean_1000)
+sd_combined_chains_mean_1000 <- sd(combined_chains_mean_1000)
+# mean and SD of combined chains for sigma^2
+mean_combined_chains_var_1000 <- mean(combined_chains_var_1000)
+sd_combined_chains_var_1000 <- sd(combined_chains_var_1000)
+# printing values
+mean_combined_chains_mean_1000
+sd_combined_chains_mean_1000
+mean_combined_chains_var_1000
+sd_combined_chains_var_1000
+
+
+##### n = 100000 #####
+# creating new simulated data
+y_100000 <- rnorm(100000, 100, sqrt(25))
+
+# creating matrices to store samples from posterior distributions of mean and variance
+sample_mean_matrix_100000 <- matrix(nrow = 10000, ncol = 3)
+sample_var_matrix_100000 <- matrix(nrow = 10000, ncol = 3)
+
+# initializing values
+sample_mean_matrix_100000[1,] <- 20
+sample_var_matrix_100000[1,] <- 15
+
+# sampling from posterior distributions
+for (chain in 1:ncol(sample_mean_matrix_100000)){
+  for (iter in 2:nrow(sample_mean_matrix_100000)){
+    prev_var <- sample_var_matrix_100000[iter-1,chain]
+    sample_mean_matrix_100000[iter,chain] <- draw.mean(y_100000, 0, sqrt(10000), prev_var)
+    prev_mean <- sample_mean_matrix_100000[iter,chain]
+    sample_var_matrix_100000[iter, chain] <- draw.var(y_100000, 0.01, 0.01, prev_mean)
+  }
+}
+
+# discarding first 1000 rows as burn-in/warmup
+post_burn_mean_100000 <- sample_mean_matrix_100000[2:nrow(sample_mean_matrix_100000),]
+# hist(post_burn_mean_100)
+
+# making trace plots
+plot(seq(1, nrow(post_burn_mean_100000)), post_burn_mean_100000[,1], xlab = "Iteration", ylab = "Sampled Mean", type = 'l', main = 'Trace Plot of Combined Chains of Sampled Means (n = 100000)', col = 'green')
+lines(post_burn_mean_100000[,2], col = 'blue')
+lines(post_burn_mean_100000[,3], col = 'red')
+
+# combining chains
+combined_chains_mean_100000 <- c(post_burn_mean_100000[,1], post_burn_mean_100000[,2], post_burn_mean_100000[,3])
+hist(combined_chains_mean_100000, main = "Sampled Means (n = 100000)")
+abline(v = 100, col = 'blue', lwd = 3)
+
+# repeating for the variance
+post_burn_var_100000 <- sample_var_matrix_100000[2:nrow(sample_var_matrix_100000),]
+
+# making trace plots
+plot(seq(1, nrow(post_burn_var_100000)), post_burn_var_100000[,1], xlab = "Iteration", ylab = "Sampled Variance", type = 'l', main = 'Trace Plot of Combined Chains of Sampled Variance (n = 100000)', col = 'green')
+lines(post_burn_var_100000[,2], col = 'blue')
+lines(post_burn_var_100000[,3], col = 'red')
+
+# combining chains
+combined_chains_var_100000 <- c(post_burn_var_100000[,1], post_burn_var_100000[,2], post_burn_var_100000[,3])
+hist(combined_chains_var_100000, main = "Sampled Variance (n = 100000)")
+abline(v = 25, col = 'blue', lwd = 3)
+
+# mean and SD of combined chains for mu
+mean_combined_chains_mean_100000 <- mean(combined_chains_mean_100000)
+sd_combined_chains_mean_100000 <- sd(combined_chains_mean_100000)
+# mean and SD of combined chains for sigma^2
+mean_combined_chains_var_100000 <- mean(combined_chains_var_100000)
+sd_combined_chains_var_100000 <- sd(combined_chains_var_100000)
+# printing values
+mean_combined_chains_mean_100000
+sd_combined_chains_mean_100000
+mean_combined_chains_var_100000
+sd_combined_chains_var_100000
+```
+### Question 15
+```{r}
+## setting seed
+set.seed(1991)
+
+## new draw mean function
+draw.mean_new <- function(data, mu_0, sigma_0, variance){
+  mu_1 <- ((mu_0 / sigma_0^2) + (sum(data) / variance)) / ((1/sigma_0^2) + (length(data)/variance))
+  sigma_sqd_1 <- 1 / ((1 / sigma_0^2) + length(data) / variance)
+  random_meandraw <- rnorm(1, mu_1, sigma_sqd_1)
+  return(random_meandraw)
+}
+
+## new draw var function
+draw.var_new <- function(data, alpha_0, beta_0, mu){
+  alpha_1 <- alpha_0 + (length(data) / 2)
+  beta_1 <- beta_0 + (sum((data - mu)^2) / 2)
+  random_vardraw <- rinvgamma(1, shape = alpha_1, rate = beta_1)
+  return(random_vardraw)
+}
+
+## creating matrices to store samples from posterior distributions of mean and variance
+sample_mean_matrix <- matrix(nrow = 10000, ncol = 3)
+sample_var_matrix <- matrix(nrow = 10000, ncol = 3)
+
+## initializing first mean and variance values
+sample_mean_matrix[1,] <- 20
+sample_var_matrix[1,] <- 15
+
+## drawing variance first, then mean
+for (chain in 1:ncol(sample_mean_matrix)){
+  for (iter in 2:nrow(sample_mean_matrix)){
+    prev_mean <- sample_mean_matrix[iter-1,chain]
+    sample_var_matrix[iter, chain] <- draw.var_new(y, 0.01, 0.01, prev_mean)
+    prev_var <- sample_var_matrix[iter,chain]
+    sample_mean_matrix[iter, chain] <- draw.mean_new(y, 0, sqrt(10000), prev_var)
+  }
+}
+
+# discarding first 1000 rows as burn-in/warmup
+post_burn_mean <- sample_mean_matrix[1001:nrow(sample_mean_matrix),]
+# hist(post_burn_mean)
+
+# making trace plots
+plot(seq(1, nrow(post_burn_mean)), post_burn_mean[,1], xlab = "Iteration", ylab = "Sampled Mean", type = 'l', main = 'Trace Plot', col = 'green')
+lines(post_burn_mean[,2], col = 'blue')
+lines(post_burn_mean[,3], col = 'red')
+
+# combining chains
+combined_chains_mean <- c(post_burn_mean[,1], post_burn_mean[,2], post_burn_mean[,3])
+hist(combined_chains_mean)
+abline(v = 100, col = 'blue', lwd = 3)
+
+# repeating burn-in removal, plots for the variance
+post_burn_var <- sample_var_matrix[1001:nrow(sample_var_matrix),]
+
+# making trace plots
+plot(seq(1, nrow(post_burn_var)), post_burn_var[,1], xlab = "Iteration", ylab = "Sampled Variance", type = 'l', main = 'Trace Plot', col = 'green')
+lines(post_burn_var[,2], col = 'blue')
+lines(post_burn_var[,3], col = 'red')
+
+# combining chains
+combined_chains_var <- c(post_burn_var[,1], post_burn_var[,2], post_burn_var[,3])
+hist(combined_chains_var)
+abline(v = 25, col = 'blue', lwd = 3)
+
+
+# mean and SD of combined chains for mu
+mean_combined_chains_mean <- mean(combined_chains_mean)
+sd_combined_chains_mean <- sd(combined_chains_mean)
+# mean and SD of combined chains for sigma^2
+mean_combined_chains_var <- mean(combined_chains_var)
+sd_combined_chains_var <- sd(combined_chains_var)
+# printing values
+mean_combined_chains_mean
+sd_combined_chains_mean
+mean_combined_chains_var
+sd_combined_chains_var
+```
