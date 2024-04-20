@@ -1,0 +1,2 @@
+## Griffin Shelor JAGS Primer
+
