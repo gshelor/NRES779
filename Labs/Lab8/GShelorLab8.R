@@ -128,4 +128,48 @@ diff <- post_df_liz$`prob[10]` - post_df_liz$`prob[20]`
 quantile(diff, 0.025)
 quantile(diff, 0.975)
 
-##### Section 3 Question 10 #####
+##### Section 3 Question 12 #####
+## initializing model
+inits_liz = list(
+  list(b0 = 0, b1 = 2),
+  list(b0 = 2, b1 = 5),
+  list(b0 = 5, b1 = 0))
+data_liz = list(
+  n = nrow(IslandLizards),
+  x = as.double(IslandLizards$scaledPAR),
+  y = as.double(IslandLizards$presence),
+  OneToSixty_scale = OneToSixty_scale)
+n.adapt = 5000
+n.update = 10000
+n.iter = 10000
+# Call to JAGS
+set.seed(1)
+## pop growth model
+jm_liz = jags.model(here("Labs", "Lab8", "LizardsJAGS.R"), data = data_liz, inits = inits_liz,
+                    n.chains = length(inits_liz), n.adapt = n.adapt)
+update(jm_liz, n.iter = n.update)
+zm_liz = coda.samples(jm_liz, variable.names = c("b0", "b1", "prob"),
+                      n.iter = n.iter, n.thin = 1)
+zj_liz = jags.samples(jm_liz, variable.names = c("b0", "b1", "prob"), n.iter = n.iter, n.thin = 1)
+## converting coda object to df
+post_df_liz = as.data.frame(rbind(zm_liz[[1]], zm_liz[[2]], zm_liz[[3]]))
+
+## plotting trace plots and density plots
+par(mfrow = c(2,3), mar = c(2, 2, 2, 2))
+plot(zm_liz[,1:2])
+
+## Gelman diagnostic
+gelman.diag(zm_liz[,1:2])
+heidel.diag(zm_liz[,1:2])
+
+## recreating plot from S3Q8
+prob_med <- apply(post_df_liz[,3:62], 2, median) #median
+prob_lower <- apply(post_df_liz[,3:62], 2, quantile, 0.025) #lower CI
+prob_upper <- apply(post_df_liz[,3:62], 2, quantile, 0.975) 
+## plotting median growth rate with credible intervals as a dashed line
+par(mfrow = c(1,1), mar = c(4,4,4,4))
+plot(IslandLizards$perimeterAreaRatio, IslandLizards$presence, xlab = "Perimeter to Area Ratio", ylab = "Probability of Presence", main = "Probability of Lizard Presence as Function of PAR with Adjusted Priors", sub = "Median of Predicted Probability = solid line, 95% credible intervals = dashed line")
+lines(prob_med, lty = 1)
+lines(prob_lower, lty = 2)
+lines(prob_upper, lty = 2)
+
