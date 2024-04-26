@@ -11,4 +11,8 @@ model{
     mu[i] <- r*(1 - x[i]/K)
     y[i] ~ dnorm(mu[i], tau)
   }
+  ## derived quantities for pop growth rate
+  for(j in 1:length(N)){
+    growthrate[j] <- r * N[j] * (1 - N[j] / K)
+  }
 }

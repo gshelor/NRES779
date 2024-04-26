@@ -9,4 +9,8 @@ model{
     logit(p[i]) <- b0 + b1*x[i]
     y[i] ~ dbern(p[i])
   }
+  # derived quantities
+  for(j in 1:60){
+    logit(prob[j]) <- b0 + b1*OneToSixty_scale[j]
+  }
 }
