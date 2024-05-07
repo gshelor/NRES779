@@ -12,6 +12,7 @@ model{
     y[i] ~ dnorm(mu[i], tau)
   }
   ## derived quantities for pop growth rate
+  maxgrowth <- K/2
   for(j in 1:length(N)){
     growthrate[j] <- r * N[j] * (1 - N[j] / K)
   }
