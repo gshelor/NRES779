@@ -1,0 +1,103 @@
+---
+title: "NRES 779 Presentation"
+author: "Griffin Shelor"
+format: beamer
+theme: PaloAlto
+echo: false
+---
+
+# Data
+- SNOTEL
+- Daymet
+
+# Histogram of SNOTEL Data
+```{r}
+##### Loading Packages, setting up script to use parallel package, reading in data #####
+library(pacman)
+p_load(snotelr, here, tidyverse, rstan, daymetr, parallel, isotracer, LaplacesDemon, rjags, loo, gt, gtExtras, RColorBrewer, ggpubr, webshot2, pals)
+
+## setting script to maximise use of cores
+options(mc.cores = detectCores())
+
+## reading in csv and filtering to only years post 2000 for a specific site because any other model would 
+SnotelDaymet <- read_csv(here("Project", "Data", "SNOTEL", "SnotelDaymetClean.csv")) |>
+  filter(Year >= 2010) |>
+  filter(state == "CA") |>
+  filter(elev == min(elev) | elev == max(elev)) |>
+  mutate(swe_plus = snow_water_equivalent + 0.001) |>
+  arrange(date, site_id)
+
+## moving data down a row so that it is easier to work into a model statement and Stan data list
+SnotelDaymet$prevday_swe <- -999
+SnotelDaymet$prevday_maxtemp <- -999
+SnotelDaymet$prevday_mintemp <- -999
+SnotelDaymet$prevday_meantemp <- -999
+SnotelDaymet$prevday_precip <- -999
+SnotelDaymet$prevday_cumulative_precip <- -999
+
+SnotelDaymet574 <- SnotelDaymet |>
+  filter(site_id == 574) |>
+  arrange(date)
+SnotelDaymet778 <- SnotelDaymet |>
+  filter(site_id == 778) |>
+  arrange(date)
+
+for (i in 2:nrow(SnotelDaymet574)){
+  SnotelDaymet574$prevday_swe[i] = SnotelDaymet574$snow_water_equivalent[i-1]
+  SnotelDaymet574$prevday_maxtemp[i] <- SnotelDaymet574$daymet_maxtemp[i-1]
+  SnotelDaymet574$prevday_mintemp[i] <- SnotelDaymet574$daymet_mintemp[i-1]
+  SnotelDaymet574$prevday_meantemp[i] <- SnotelDaymet574$daymet_meantemp[i-1]
+  SnotelDaymet574$prevday_precip[i] <- SnotelDaymet574$daymet_precip[i-1]
+  SnotelDaymet574$prevday_cumulative_precip[i] <- SnotelDaymet574$precipitation_cumulative[i-1]
+}
+for (i in 2:nrow(SnotelDaymet778)){
+  SnotelDaymet778$prevday_swe[i] = SnotelDaymet778$snow_water_equivalent[i-1]
+  SnotelDaymet778$prevday_maxtemp[i] <- SnotelDaymet778$daymet_maxtemp[i-1]
+  SnotelDaymet778$prevday_mintemp[i] <- SnotelDaymet778$daymet_mintemp[i-1]
+  SnotelDaymet778$prevday_meantemp[i] <- SnotelDaymet778$daymet_meantemp[i-1]
+  SnotelDaymet778$prevday_precip[i] <- SnotelDaymet778$daymet_precip[i-1]
+  SnotelDaymet778$prevday_cumulative_precip[i] <- SnotelDaymet778$precipitation_cumulative[i-1]
+}
+
+## cutting off top row of each site subset since it does not contain true previous day information
+SnotelDaymet574 <- SnotelDaymet574[2:nrow(SnotelDaymet574),]
+SnotelDaymet778 <- SnotelDaymet778[2:nrow(SnotelDaymet778),]
+
+## merging them back together
+SnotelDaymet <- rbind(SnotelDaymet574, SnotelDaymet778) |>
+  arrange(date, site_id)
+hist(SnotelDaymet$snow_water_equivalent, main = "SWE Values at 2 California SNOTEL Sites between 2010 and 2022")
+```
+
+# Model Development
+
+- Lognormal distribution
+- Tried and failed to use gamma
+- Truncated normal
+
+# Bayesian p-values
+
+- Every single model had a value of 1 for the mean and variance.
+
+# WAIC of Top 4 Models
+
+![WAIC Table](/Users/gshelor/Documents/NRES779/Project/Outputs/WAICTable.png)
+
+
+# Best Performing Model
+- Model statement: $y \sim$ lognormal$(\mu, \sigma^2)$
+- where $\mu = \beta_0 + \beta_1 x_1$
+- $x_1$ is max temperature
+- Prior for the betas: $b_n \sim$ normal(0,10)
+- $\sigma$ prior: $\sigma \sim$ gamma(1,1)
+
+# Traceplot of Best Performing Model
+![Traceplot](/Users/gshelor/Documents/NRES779/Project/Outputs/Model3Traceplot.png)
+
+# Some Things to Consider in the Future
+- Adding more data with more time for models to run
+- Looking at site random effects
+- Figure out how to use gamma distribution
+- Add in additional topographical variables (slope, aspect) and possibly land cover
+- Adjust priors
+
